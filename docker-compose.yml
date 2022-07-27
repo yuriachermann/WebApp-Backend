@@ -1,0 +1,34 @@
+version: '3.8'
+services:
+  django:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    command: 'python manage.py runserver 0.0.0.0:8000'
+    ports:
+        - "8000:8000" # port:hostport
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+
+  queue:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    command: 'python -u consumer.py'
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.7.22
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "db_backend"
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "password"
+    restart: always
+    ports:
+      - "33066:3306" # port 3306 is exposed to the outside world
+    volumes:
+        - .dbdata:/var/lib/mysql
